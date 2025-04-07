@@ -8,6 +8,7 @@ import (
 	"github.com/L200160149/be-sewa-alat-berat/app"
 	"github.com/L200160149/be-sewa-alat-berat/config"
 	"github.com/L200160149/be-sewa-alat-berat/controller"
+	"github.com/L200160149/be-sewa-alat-berat/middleware"
 	"github.com/L200160149/be-sewa-alat-berat/repository"
 	"github.com/L200160149/be-sewa-alat-berat/service"
 	"github.com/go-playground/validator/v10"
@@ -17,11 +18,19 @@ func main() {
 	config.InitEnv()
 
     db := app.NewDB()
-    usersRepository := repository.NewUsersRepository()
     validate := validator.New()
+
+    // users
+    usersRepository := repository.NewUsersRepository()
     usersService := service.NewUsersService(usersRepository, db, validate)
     usersController := controller.NewUsersController(usersService)
-    router := app.NewRouter(usersController)
+    
+    // auth
+    authRepository := repository.NewAuthRepository()
+    authService := service.NewAuthService(authRepository, db, validate)
+    authController := controller.NewAuthController(authService)
+    
+    router := app.NewRouter(usersController, authController)
 
     appPort := os.Getenv("APP_PORT")
     if appPort == "" {
@@ -30,7 +39,7 @@ func main() {
 
     server := http.Server{
         Addr:    ":" + appPort,
-        Handler: router,
+        Handler: middleware.NewAuthMiddleware(router),
     }
 
     log.Printf("Server running on port %s", appPort)
