@@ -1,11 +1,10 @@
 package migrations
 
 import (
-	"log"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
+	"github.com/L200160149/be-sewa-alat-berat/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -52,11 +51,8 @@ type User struct {
 }
 
 func Run() {
-	err := godotenv.Load()
-	if err != nil {
-	  log.Fatal("Error loading .env file")
-	}
-  
+	config.InitEnv()
+
 	db_user := os.Getenv("DB_USER")
 	db_password := os.Getenv("DB_PASSWORD")
 	db_host := os.Getenv("DB_HOST")
